@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cisco UCCX 12.5 Wallboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+</head>
+<body class="theme-sunny">
+
+  <!-- TOP CONTROL / NAVIGATION BAR -->
+  <header class="top-nav">
+    <div class="nav-left">
+      <div class="control-group">
+        <label for="teamSelect" data-i18n="nav.teams">Takımlar:</label>
+        <select id="teamSelect" class="styled-select">
+          <option value="Default">Default</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="csqSelect" data-i18n="nav.csq">CSQ:</label>
+        <select id="csqSelect" class="styled-select csq-badge">
+          <option value="SALES">SALES</option>
+        </select>
+        <button id="addCsqQuickBtn" class="nav-icon-btn" data-i18n="nav.addCsq" data-i18n-title="nav.addCsqTitle" title="Yeni CSQ Ekle veya Yönet" style="font-size:12px; font-weight:bold; padding: 2px 7px;">+ CSQ</button>
+      </div>
+
+      <button id="slideShowBtn" class="nav-btn" data-i18n-title="nav.slideShowTitle" title="Kuyruklar arası otomatik geçiş">
+        <span class="btn-indicator"></span>
+        <span data-i18n="nav.slideShow">Slayt Gösterisi</span>
+      </button>
+
+      <div class="control-group">
+        <select id="slideDuration" class="styled-select duration-select">
+          <option value="10" selected>10 sn</option>
+          <option value="20">20 sn</option>
+          <option value="30">30 sn</option>
+          <option value="60">60 sn</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <select id="themeSelect" class="styled-select theme-select">
+          <option value="theme-sunny" data-i18n="nav.themeSunny" selected>Sunny (Açık)</option>
+          <option value="theme-dark" data-i18n="nav.themeDark">Dark TV (Koyu)</option>
+          <option value="theme-cisco" data-i18n="nav.themeCisco">Cisco Navy</option>
+          <option value="theme-slate" data-i18n="nav.themeSlate">Slate Gray</option>
+        </select>
+      </div>
+
+      <button id="darkModeToggleBtn" class="nav-btn dark-mode-toggle" data-i18n-title="nav.darkModeTitle" title="Karanlık Modu Aç/Kapat">
+        🌙 Koyu Mod
+      </button>
+    </div>
+
+    <div class="nav-right">
+      <div class="control-group">
+        <select id="langSelect" class="styled-select lang-select" data-i18n-title="nav.langTitle" title="Dil Seçimi">
+          <option value="tr">🌐 Türkçe (TR)</option>
+          <option value="en">🌐 English (EN)</option>
+          <option value="de">🌐 Deutsch (DE)</option>
+          <option value="fr">🌐 Français (FR)</option>
+          <option value="es">🌐 Español (ES)</option>
+        </select>
+      </div>
+
+      <div id="connectionStatusBadge" class="status-badge" title="Bağlantı Durumu">
+        <span class="status-dot"></span>
+        <span class="status-text" data-i18n="status.connecting">Bağlanıyor...</span>
+      </div>
+
+      <button id="soundToggleBtn" class="nav-icon-btn" title="Sesli İkaz Açık">
+        🔊
+      </button>
+
+      <button id="fullscreenBtn" class="nav-icon-btn" data-i18n-title="nav.fullscreenTitle" title="Tam Ekran (TV Modu)">
+        ⛶
+      </button>
+
+      <button id="adminBtn" class="nav-link-btn" data-i18n="nav.adminPage">
+        Yönetim Paneli
+      </button>
+
+      <a href="#" id="logoutBtn" class="nav-link-btn" data-i18n="nav.logout" style="display:none;">Çıkış</a>
+    </div>
+  </header>
+
+  <!-- SLIDESHOW PROGRESS BAR -->
+  <div id="slideProgressBar" class="progress-bar-container">
+    <div id="slideProgressFill" class="progress-bar-fill"></div>
+  </div>
+
+  <!-- MAIN 15 TILES WALLBOARD GRID -->
+  <main class="wallboard-container">
+    <div class="tiles-grid">
+      
+      <!-- SATIR 1 -->
+      <div class="metric-card" id="card-toplamCagri">
+        <div class="card-header" data-i18n="cards.totalCalls">TOPLAM ÇAĞRI</div>
+        <div class="card-body">
+          <div class="card-value" id="val-toplamCagri">0</div>
+        </div>
+      </div>
+
+      <div class="metric-card" id="card-musaitOlmayanMT">
+        <div class="card-header" data-i18n="cards.notReadyAgents">MÜSAİT OLMAYAN MT</div>
+        <div class="card-body">
+          <div class="card-value text-warning" id="val-musaitOlmayanMT">0</div>
+        </div>
+      </div>
+
+      <div class="metric-card" id="card-musaitMT">
+        <div class="card-header" data-i18n="cards.readyAgents">MÜSAİT MT</div>
+        <div class="card-body">
+          <div class="card-value text-success" id="val-musaitMT">0</div>
+        </div>
+      </div>
+
+      <!-- SATIR 2 -->
+      <div class="metric-card" id="card-gorusenMT">
+        <div class="card-header" data-i18n="cards.talkingAgents">GÖRÜŞEN MT</div>
+        <div class="card-body">
+          <div class="card-value text-info" id="val-gorusenMT">0</div>
+        </div>
+      </div>
+
+      <div class="metric-card" id="card-cevaplananCagrilar">
+        <div class="card-header" data-i18n="cards.answeredCalls">CEVAPLANAN ÇAĞRILAR</div>
+        <div class="card-body">
+          <div class="card-value" id="val-cevaplananCagrilar">0</div>
+        </div>
+      </div>
+
+      <div class="metric-card" id="card-kacanCagrilar">
+        <div class="card-header" data-i18n="cards.abandonedCalls">KAÇAN ÇAĞRILAR</div>
+        <div class="card-body">
+          <div class="card-value text-danger" id="val-kacanCagrilar">0</div>
+        </div>
+      </div>
+
+      <!-- SATIR 3 -->
+      <div class="metric-card" id="card-bekleyenCagrilar">
+        <div class="card-header" data-i18n="cards.waitingCalls">BEKLEYEN ÇAĞRILAR</div>
+        <div class="card-body">
+          <div class="card-value" id="val-bekleyenCagrilar">0</div>
+        </div>
+      </div>
+
+      <div class="metric-card" id="card-slCevaplanan">
+        <div class="card-header" data-i18n="cards.slAnswered">SL CEVAPLANAN</div>
+        <div class="card-body">
+          <div class="card-value" id="val-slCevaplanan">0</div>
+        </div>
+      </div>
+
+      <div class="metric-card" id="card-slKacan">
+        <div class="card-header" data-i18n="cards.slAbandoned">SL KAÇAN</div>
+        <div class="card-body">
+          <div class="card-value" id="val-slKacan">0</div>
+        </div>
+      </div>
+
+      <!-- SATIR 4 -->
+      <div class="metric-card" id="card-enUzunBekleme">
+        <div class="card-header" data-i18n="cards.longestWait">EN UZUN BEKLEME</div>
+        <div class="card-body">
+          <div class="card-value time-val" id="val-enUzunBekleme">00:00:00</div>
+        </div>
+      </div>
+
+      <div class="metric-card" id="card-ortalamaGorusme">
+        <div class="card-header" data-i18n="cards.avgTalk">ORTALAMA GÖRÜŞME</div>
+        <div class="card-body">
+          <div class="card-value time-val" id="val-ortalamaGorusme">00:00:00</div>
+        </div>
+      </div>
+
+      <div class="metric-card" id="card-ortalamaKacan">
+        <div class="card-header" data-i18n="cards.avgAbandon">ORTALAMA KAÇAN</div>
+        <div class="card-body">
+          <div class="card-value time-val" id="val-ortalamaKacan">00:00:00</div>
+        </div>
+      </div>
+
+      <!-- SATIR 5 -->
+      <div class="metric-card" id="card-ortalamaBekleme">
+        <div class="card-header" data-i18n="cards.avgWait">ORTALAMA BEKLEME</div>
+        <div class="card-body">
+          <div class="card-value time-val" id="val-ortalamaBekleme">00:00:00</div>
+        </div>
+      </div>
+
+      <div class="metric-card" id="card-slOrani">
+        <div class="card-header" data-i18n="cards.slRatio">SL ORANI</div>
+        <div class="card-body">
+          <div class="card-value" id="val-slOrani">%100</div>
+        </div>
+      </div>
+
+      <div class="metric-card" id="card-arOrani">
+        <div class="card-header" data-i18n="cards.arRatio">AR ORANI</div>
+        <div class="card-body">
+          <div class="card-value" id="val-arOrani">%100</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER BAR -->
+  <footer class="footer-bar">
+    <div class="footer-info">
+      <span data-i18n="footer.title">Cisco UCCX 12.5 Gerçek Zamanlı Wallboard</span> | 
+      <span id="footerHost">UCCX Informix</span> | 
+      <span id="footerClock">00:00:00</span>
+    </div>
+  </footer>
+
+  <!-- ADMIN / SETTINGS MODAL -->
+  <div id="adminModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 data-i18n="modal.title">UCCX 12.5 Wallboard Ayarları & Bağlantı</h3>
+        <button id="closeModalBtn" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-content">
+        <form id="settingsForm">
+          <div class="form-row">
+            <div class="form-field">
+              <label for="cfgHost" data-i18n="modal.host">UCCX Sunucu IP / Host:</label>
+              <input type="text" id="cfgHost" value="" placeholder="192.0.2.10" required>
+            </div>
+            <div class="form-field">
+              <label for="cfgPort" data-i18n="modal.port">Informix Port:</label>
+              <input type="number" id="cfgPort" value="1504" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="cfgServer" data-i18n="modal.server">Informix Server (Instance Adı):</label>
+              <input type="text" id="cfgServer" value="" placeholder="uccx_server_uccx" required>
+            </div>
+            <div class="form-field">
+              <label for="cfgDb" data-i18n="modal.db">Veritabanı Adı (Database):</label>
+              <input type="text" id="cfgDb" value="db_cra" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="cfgUser" data-i18n="modal.user">Kullanıcı Adı (Username):</label>
+              <input type="text" id="cfgUser" value="uccxwallboard" required>
+            </div>
+            <div class="form-field">
+              <label for="cfgPassword" data-i18n="modal.password">Şifre (Password):</label>
+              <input type="password" id="cfgPassword" value="" data-i18n-placeholder="modal.passwordKeepPlaceholder" placeholder="•••••••• (Değiştirmek istemiyorsanız boş bırakın)">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="cfgRefresh" data-i18n="modal.refresh">Yenileme Aralığı (Milisaniye):</label>
+              <input type="number" id="cfgRefresh" value="10000" min="1000" step="1000">
+            </div>
+            <div class="form-field">
+              <label for="cfgMockMode" data-i18n="modal.mode">Çalışma Modu:</label>
+              <select id="cfgMockMode">
+                <option value="auto" data-i18n="modal.modeAuto">Otomatik (Ulaşamazsa Simülasyona Geç)</option>
+                <option value="false" data-i18n="modal.modeLive">Sadece Canlı Informix DB</option>
+                <option value="true" data-i18n="modal.modeMock">Zorunlu Simülasyon (Test Modu)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row" style="grid-column: 1 / -1;">
+            <div class="form-field" style="width: 100%;">
+              <label for="cfgCsqList" data-i18n="modal.csqListLabel">Sistemde Tanımlı CSQ İsimleri (Virgülle ayırarak yazın):</label>
+              <input type="text" id="cfgCsqList" data-i18n-placeholder="modal.csqPlaceholder" placeholder="Örn: SALES, SERVICE, CSQ_DESTEK" style="width: 100%;">
+              <small data-i18n="modal.csqHelp" style="color: #6b7280; margin-top: 3px;">UCCX Informix RtCSQsSummary tablosundan gelenler otomatik eklenir. Eklemek istediğiniz tüm CSQ isimlerini buraya girebilirsiniz.</small>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" id="testConnBtn" class="btn btn-secondary" data-i18n="modal.testBtn">
+              🔌 Bağlantıyı Test Et
+            </button>
+            <button type="submit" class="btn btn-primary" data-i18n="modal.saveBtn">
+              💾 Ayarları Kaydet
+            </button>
+          </div>
+
+          <div id="testResultBox" class="test-result-box" style="display:none;"></div>
+
+          <div id="adminCredsSection" class="info-section admin-creds-section">
+            <h4 data-i18n="adminCreds.sectionTitle">🔐 Yönetici Giriş Bilgilerini Değiştir</h4>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="admNewUser" data-i18n="adminCreds.newUser">Yeni Yönetici Kullanıcı Adı:</label>
+                <input type="text" id="admNewUser" autocomplete="username">
+              </div>
+              <div class="form-field">
+                <label for="admCurrentPass" data-i18n="adminCreds.currentPass">Mevcut Yönetici Şifresi:</label>
+                <input type="password" id="admCurrentPass" autocomplete="current-password">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field" style="grid-column: 1 / -1;">
+                <label for="admNewPass" data-i18n="adminCreds.newPass">Yeni Yönetici Şifresi:</label>
+                <input type="password" id="admNewPass" autocomplete="new-password">
+              </div>
+            </div>
+            <div class="modal-actions" style="margin-top: 8px;">
+              <button type="button" id="updateAdminCredsBtn" class="btn btn-secondary" data-i18n="adminCreds.updateBtn">
+                🔐 Yönetici Bilgilerini Güncelle
+              </button>
+            </div>
+            <div id="adminCredsResultBox" class="test-result-box" style="display:none;"></div>
+          </div>
+
+          <div class="info-section">
+            <h4 data-i18n="modal.sqlTitle">Kullanılan UCCX Informix Tabloları & Sorgu</h4>
+            <pre class="sql-code">SELECT csqname, loggedinagents, availableagents, unavailableagents,
+       talkingagents, workingagents, reservedagents,
+       totalcalls, callshandled, callsabandoned, callswaiting,
+       convlongestwaitduration, convavgtalkduration, convavgwaitduration,
+       convoldestcontact
+FROM RtCSQsSummary;</pre>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN LOGIN MODAL -->
+  <div id="loginModal" class="modal-overlay">
+    <div class="modal-box login-modal-box">
+      <div class="modal-header">
+        <h3 data-i18n="login.title">🔐 Yönetim Paneli Girişi</h3>
+        <button type="button" id="closeLoginModalBtn" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-content">
+        <p class="login-subtitle" data-i18n="login.subtitle">Devam etmek için yönetici kullanıcı adı ve şifrenizi girin.</p>
+        <form id="loginForm">
+          <div class="form-field" style="margin-bottom: 14px;">
+            <label for="loginUsername" data-i18n="login.username">Kullanıcı Adı:</label>
+            <input type="text" id="loginUsername" autocomplete="username" data-i18n-placeholder="login.usernamePlaceholder" placeholder="Yönetici kullanıcı adı" required>
+          </div>
+          <div class="form-field" style="margin-bottom: 14px;">
+            <label for="loginPassword" data-i18n="login.password">Şifre:</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="loginPassword" autocomplete="current-password" data-i18n-placeholder="login.passwordPlaceholder" placeholder="Yönetici şifresi" required>
+              <button type="button" id="toggleLoginPassBtn" class="toggle-pass-btn" data-i18n-title="login.togglePassTitle" title="Şifreyi Göster/Gizle">👁️</button>
+            </div>
+          </div>
+          <div id="loginErrorBox" class="test-result-box error" style="display:none; margin-top: 0; margin-bottom: 14px;"></div>
+          <div class="modal-actions">
+            <button type="button" id="cancelLoginBtn" class="btn btn-secondary" data-i18n="login.cancelBtn">İptal</button>
+            <button type="submit" id="loginSubmitBtn" class="btn btn-primary" data-i18n="login.submitBtn">🔑 Giriş Yap</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "uccx-wallboard",
+  "version": "1.0.0",
+  "description": "Cisco UCCX 12.5 Real-Time Wallboard Dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "build:java": "javac -source 1.8 -target 1.8 -encoding UTF-8 -cp ifxjdbc.jar UccxBridge.java"
+  },
+  "keywords": [
+    "cisco",
+    "uccx",
+    "wallboard",
+    "informix",
+    "contact-center"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  }
+}
